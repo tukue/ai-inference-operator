@@ -29,7 +29,7 @@ flowchart LR
     Operator -. status conditions .-> CR
 ```
 
-GitOps manages the custom resource; the operator manages its associated parts. See [architecture](docs/architecture.md) for the serving contract, ownership and status design.
+GitOps manages the custom resource; the operator manages the Deployment and Service. See [architecture](docs/architecture.md) for the serving contract, ownership and status design.
 
 ## Proposed custom resource
 
@@ -61,7 +61,7 @@ The initial API will fix the serving port and health endpoints instead of suppor
 - Restore deleted owned resources and correct drift in fields the operator manages.
 - Report readiness, rollout progress and rollout failures through status conditions tied to the observed resource generation.
 - Apply image, replica and resource changes through Deployment updates; rely on Kubernetes rollout behaviour without automatic rollback.
-- Set owner references so Kubernetes garbage collection cleans up children when the custom resource is deleted.
+- Set owner references so Kubernetes garbage collection cleans up managed resources when the custom resource is deleted.
 
 Reconciliation will be idempotent. Readiness will mean the model can serve requests, rather than merely that a process or HTTP server is running. Permissions will be namespace-scoped where practical.
 
@@ -69,7 +69,7 @@ Reconciliation will be idempotent. Readiness will mean the model can serve reque
 
 1. **Scaffold and API:** initialize Go/Kubebuilder, define and validate the initial CRD, and document generated development commands.
 2. **Serving contract:** build the small CPU FastAPI workload with inference and meaningful health endpoints.
-3. **Core reconciliation:** manage Deployment and Service, handle updates and drift, recover deleted children, and establish ownership cleanup.
+3. **Core reconciliation:** manage Deployment and Service, handle updates and drift, recover deleted managed resources, and establish ownership cleanup.
 4. **Operational status:** expose generation-aware conditions and test model readiness and rollout failures.
 5. **Local demonstration and verification:** complete kind workflows, automated failure scenarios and a reproducible portfolio walkthrough.
 
@@ -81,6 +81,6 @@ Local development will use Go, Kubebuilder, a container build tool, kind, kubect
 
 Planned verification combines unit tests for decision logic, envtest for API validation and reconciliation against a real API server, and kind end-to-end tests for Deployment rollouts, probes, request serving and garbage collection. envtest does not run the Kubernetes Deployment controller, scheduler or kubelet, so it cannot establish workload readiness on its own.
 
-Failure scenarios will include deleted children, image pull failures, a model that never becomes ready, invalid resources, conflicting ownership and updates during a rollout. Tests will assert observable resources and status, including recovery after failures are corrected.
+Failure scenarios will include deleted managed resources, image pull failures, a model that never becomes ready, invalid resources, conflicting ownership and updates during a rollout. Tests will assert observable resources and status, including recovery after failures are corrected.
 
 The next implementation step is milestone 1: scaffold the Go/Kubebuilder project and turn the proposed API into a validated CRD.

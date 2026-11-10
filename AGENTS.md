@@ -13,14 +13,16 @@ This repository is at the design stage. Implementation has not started. Read `RE
 - Avoid unrelated infrastructure and unnecessary dependencies. Choose the smallest change that serves the active milestone.
 - Do not invent working setup commands. Add commands after scaffolding or implementation exists and verify them where possible; state any verification limits.
 
+Use explicit resource names or “managed resources” instead of human or family metaphors. Preserve official Kubernetes API terminology such as owner references.
+
 ## Design constraints
 
 - Use Go and Kubebuilder for the operator, kind for local development, and a small Python/FastAPI example workload.
 - Start with CPU workloads and the single documented HTTP serving contract.
 - Model readiness means the model can serve requests, not simply that the process has started.
-- Keep reconciliation idempotent, recover deleted owned children, and report current-generation readiness and rollout failures.
+- Keep reconciliation idempotent, recover deleted managed resources, and report current-generation readiness and rollout failures.
 - GitOps manages the custom resource; the operator manages its Deployment and Service. Do not introduce competing ownership.
-- Use controller owner references for child cleanup. Add a finalizer only if a concrete cleanup requirement justifies it.
+- Use controller owner references for managed resource cleanup. Add a finalizer only if a concrete cleanup requirement justifies it.
 - Use namespace-scoped runtime permissions where practical and review generated RBAC.
 - Do not add GPU scheduling, billing, a UI or automatic rollback.
 - Do not claim production readiness or measured performance without evidence; neither is a goal of the initial roadmap.

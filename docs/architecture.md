@@ -4,9 +4,9 @@
 
 ## Responsibility boundaries
 
-Developers or GitOps declare an `InferenceService`. The Go/Kubebuilder operator watches it and its owned Deployment and Service, computes desired child state, applies necessary changes and reports status. Kubernetes manages pod scheduling, Deployment rollouts and garbage collection.
+Developers or GitOps declare an `InferenceService`. The Go/Kubebuilder operator watches it and its owned Deployment and Service, computes desired Deployment and Service state, applies necessary changes and reports status. Kubernetes manages pod scheduling, Deployment rollouts and garbage collection.
 
-GitOps owns the custom resource specification. The operator owns its status and the child fields it generates. GitOps should not also manage those children. The workload loads a packaged model and serves the fixed HTTP contract; the operator does not run inference itself.
+GitOps owns the custom resource specification. The operator owns its status and the Deployment and Service fields it generates. GitOps should not also manage the Deployment and Service. The workload loads a packaged model and serves the fixed HTTP contract; the operator does not run inference itself.
 
 ## Initial API and serving contract
 
@@ -24,11 +24,11 @@ The readiness handler will reflect the current ability to perform inference, inc
 
 The initial model will be bundled into the image for a reproducible CPU demo. Other model formats, serving contracts, remote model stores and GPU scheduling are outside the initial scope.
 
-## Child resources and reconciliation
+## Managed resources and reconciliation
 
 Each custom resource will have one deterministically named Deployment and ClusterIP Service in its namespace. A stable per-resource selector will connect the Service to the Deployment's pods. The Service will expose HTTP port 80 to container port 8000. The pod template will carry the image, resource requirements and fixed serving probes; replicas will be set on the Deployment.
 
-Each reconciliation will read current state, derive desired state, create missing children and patch managed fields only when they differ. Repeated reconciliation of unchanged inputs must converge without repeated writes. Watches on owned resources will trigger recovery after deletion or drift. Transient errors will be retried using controller-runtime's reconciliation mechanisms.
+Each reconciliation will read current state, derive desired state, create missing managed resources and patch managed fields only when they differ. Repeated reconciliation of unchanged inputs must converge without repeated writes. Watches on owned resources will trigger recovery after deletion or drift. Transient errors will be retried using controller-runtime's reconciliation mechanisms.
 
 Existing objects with conflicting ownership will produce an explicit failure condition; the operator will not adopt or overwrite unrelated objects. Managed metadata and selectors must be designed to prevent collisions, while preserving unrelated metadata where possible.
 
@@ -50,12 +50,12 @@ The Deployment will have an explicit progress deadline. A `ProgressDeadlineExcee
 
 ## Ownership, deletion and permissions
 
-Both children will have controller owner references to the `InferenceService`. Kubernetes garbage collection will remove them after the parent is deleted. No finalizer is planned because the initial design has no external resources to clean up. Deleting a child while the parent exists will cause recreation.
+Both managed resources will have controller owner references to the `InferenceService`. Kubernetes garbage collection will remove them after the InferenceService is deleted. No finalizer is planned because the initial design has no external resources to clean up. Deleting a managed Deployment or Service while its InferenceService exists will cause recreation.
 
-The initial installation will target a configured namespace, with a Role and RoleBinding for custom resources, status, Deployments, Services, events and any leader-election Lease used by the scaffold. CRD installation requires cluster-level access; runtime child management should not require cluster-wide write permissions. Generated RBAC will be reviewed against the actual controller operations. Broader multi-namespace operation is deferred.
+The initial installation will target a configured namespace, with a Role and RoleBinding for custom resources, status, Deployments, Services, events and any leader-election Lease used by the scaffold. CRD installation requires cluster-level access; runtime resource management should not require cluster-wide write permissions. Generated RBAC will be reviewed against the actual controller operations. Broader multi-namespace operation is deferred.
 
 ## Constraints and verification
 
 The project excludes billing, a UI, automatic rollback and unrelated infrastructure. The Service is internal to the cluster; external ingress is outside the first version.
 
-Unit tests will cover pure decisions. envtest will cover CRD validation, child reconciliation and status inputs against an API server. kind tests will verify real controllers, model readiness, successful inference, failed rollouts, child recreation and garbage collection. Success criteria concern observable behaviour, not measured throughput or production suitability.
+Unit tests will cover pure decisions. envtest will cover CRD validation, managed resource reconciliation and status inputs against an API server. kind tests will verify real controllers, model readiness, successful inference, failed rollouts, managed resource recreation and garbage collection. Success criteria concern observable behaviour, not measured throughput or production suitability.

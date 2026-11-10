@@ -18,7 +18,7 @@ Acceptance: tests cover successful prediction, invalid input, loading state and 
 
 Implement idempotent Deployment and Service reconciliation, stable selectors, model probes, controller owner references and watches. Support image, replica and resource changes. Report conflicting ownership without overwriting unrelated objects.
 
-Acceptance: tests verify initial creation, convergence without unnecessary writes, drift correction, updates, child recreation and ownership conflicts. A kind check verifies the Service reaches the workload and parent deletion removes children. Document working install and cleanup commands.
+Acceptance: tests verify initial creation, convergence without unnecessary writes, drift correction, updates, managed resource recreation and ownership conflicts. A kind check verifies the Service reaches the workload and InferenceService deletion removes managed resources. Document working install and cleanup commands.
 
 ## Milestone 4 — Report operational status
 
@@ -28,7 +28,7 @@ Acceptance: tests cover successful rollout, an invalid image, a model that never
 
 ## Milestone 5 — Make the demonstration reproducible
 
-Finish a documented kind workflow and automated end-to-end suite. Demonstrate creation, inference, image/replica/resource updates, child deletion and recovery, rollout failure and correction, and parent deletion with garbage collection. Add CI checks appropriate to the working implementation.
+Finish a documented kind workflow and automated end-to-end suite. Demonstrate creation, inference, image/replica/resource updates, managed resource deletion and recovery, rollout failure and correction, and InferenceService deletion with garbage collection. Add CI checks appropriate to the working implementation.
 
 Acceptance: a clean-checkout walkthrough succeeds using documented versions and commands; failure tests have bounded waits and useful diagnostics; documentation identifies remaining limitations and links to verification evidence. The project remains a portfolio demonstration without production or performance claims.
 
