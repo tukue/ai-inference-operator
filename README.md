@@ -29,7 +29,7 @@ flowchart LR
     Operator -. status conditions .-> CR
 ```
 
-GitOps manages the custom resource; the operator manages its children. See [architecture](docs/architecture.md) for the serving contract, ownership and status design.
+GitOps manages the custom resource; the operator manages its associated parts. See [architecture](docs/architecture.md) for the serving contract, ownership and status design.
 
 ## Proposed custom resource
 
